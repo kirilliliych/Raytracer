@@ -8,6 +8,7 @@
 #include <iostream>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include "displaywindow.hpp"
 
 
 class Event

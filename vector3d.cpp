@@ -1,6 +1,4 @@
 #include "vector3d.hpp"
-#include "displaywindow.hpp"
-#include "coordsys.hpp"
 
 
 Vector3d::Vector3d(float x_coord, float y_coord, float z_coord)
@@ -11,8 +9,6 @@ Vector3d::Vector3d(float x_coord, float y_coord, float z_coord)
     assert(std::isfinite(x_coord));
     assert(std::isfinite(y_coord));
     assert(std::isfinite(z_coord));
-
-    type_ = DrawableType::VECTOR;
 }
 
 Vector3d::Vector3d(const Point3d *beginning, const Point3d *ending)
@@ -23,20 +19,6 @@ Vector3d::Vector3d(const Point3d *beginning, const Point3d *ending)
     x_coord_ = ending->get_x() - beginning->get_x();
     y_coord_ = ending->get_y() - beginning->get_y();
     z_coord_ = ending->get_z() - beginning->get_z();
-
-    type_ = DrawableType::VECTOR;
-}
-
-Vector3d::Vector3d(const Pixel3d *beginning, const Pixel3d *ending)
-{
-    assert(beginning != nullptr);
-    assert(ending    != nullptr);
-
-    x_coord_ = ending->get_x() - beginning->get_x();
-    y_coord_ = ending->get_y() - beginning->get_y();
-    z_coord_ = ending->get_z() - beginning->get_z();
-
-    type_ = DrawableType::VECTOR;
 }
 
 Vector3d::Vector3d(const Point3d *radius_vector_ending)
@@ -48,53 +30,11 @@ Vector3d::Vector3d(const Point3d *radius_vector_ending)
     z_coord_ = radius_vector_ending->get_z(); 
 }
 
-Vector3d::Vector3d(const Pixel3d *radius_vector_ending)
-{
-    assert(radius_vector_ending != nullptr);
-
-    x_coord_ = radius_vector_ending->get_x();
-    y_coord_ = radius_vector_ending->get_y();
-    z_coord_ = radius_vector_ending->get_z(); 
-}
-
-Vector3d get_reflected_vector(Vector3d *to_reflect, Vector3d *normal_vector)
-{
-    assert(to_reflect    != nullptr);
-    assert(normal_vector != nullptr);
-
-    float cos_between = cos_between_vectors(to_reflect, normal_vector);
-
-    Vector3d updated_normal = *normal_vector;
-    multiply_vector(&updated_normal, 2 * cos_between);
-
-    Vector3d reflected = updated_normal - *to_reflect;
-
-    return reflected;
-}
-
-void multiply_vector(Vector3d *vector, float multiplier)
-{
-    assert(vector != nullptr);
-    assert(std::isfinite(multiplier));
-
-    vector->set_x(vector->get_x() * multiplier);
-    vector->set_y(vector->get_y() * multiplier);
-    vector->set_z(vector->get_z() * multiplier);
-
-}
-
-float get_vector_length_square(const Vector3d *vector)
-{
-    assert(vector != nullptr);
-
-    return get_square(vector->get_x()) + get_square(vector->get_y()) + get_square(vector->get_z());
-}
-
 void normalize_vector(Vector3d *vector)
 {
     assert(vector != nullptr);
 
-    float denominator = get_vector_length_square(vector);
+    float denominator = *vector * *vector;
     assert(denominator != 0);
 
     double sqrt_denom = sqrt(denominator);
@@ -108,29 +48,87 @@ void set_vector_length(Vector3d *vector, float length)
     assert(vector != nullptr);
 
     normalize_vector(vector);
-    multiply_vector (vector, length);
+    *vector *= length;
 }
 
-float scalar_multiplication(const Vector3d *opd1, const Vector3d *opd2)
+float cos_between_vectors(const Vector3d &opd1, const Vector3d &opd2)
 {
-    assert(opd1 != nullptr);
-    assert(opd2 != nullptr);
-
-    return opd1->get_x() * opd2->get_x() +
-           opd1->get_y() * opd2->get_y() +
-           opd1->get_z() * opd2->get_z();
+    return (opd1 * opd2) / (sqrtf(opd1 * opd1) * 
+                            sqrtf(opd2 * opd2));
 }
 
-float cos_between_vectors(const Vector3d *opd1, const Vector3d *opd2)
+Vector3d get_perpendicular(const Vector3d &v1, const Vector3d &v2)
 {
-    assert(opd1 != nullptr);
-    assert(opd2 != nullptr);
-
-    return scalar_multiplication(opd1, opd2) / (sqrt(get_vector_length_square(opd1)) * 
-                                                sqrt(get_vector_length_square(opd2)));
+    return Vector3d{v1.get_y() * v2.get_z() - v1.get_z() * v2.get_y(),
+                    v1.get_z() * v2.get_x() - v1.get_x() * v2.get_z(),
+                    v1.get_x() * v2.get_y() - v1.get_y() * v2.get_x()
+                   };
 }
 
 Vector3d get_reflected(const Vector3d &cur_vector, const Vector3d &normal_vector)
 {
-    return cur_vector - normal_vector * 2 * cos_between_vectors(&cur_vector, &normal_vector);       // 
+    return cur_vector - normal_vector * 2 * cos_between_vectors(cur_vector, normal_vector);
+}
+
+Vector3d get_refracted(const Vector3d &cur_vector, const Vector3d &normal_vector, 
+                       float refraction_index,     bool *if_refraction)
+{
+    assert(std::isfinite(refraction_index));
+    assert(if_refraction != nullptr);
+
+    float cos_in = cos_between_vectors(-cur_vector, normal_vector);
+    float sin_in = sqrtf(1.0 - cos_in * cos_in);
+
+    if (refraction_index * sin_in > 1.0)
+    {
+        *if_refraction = false;
+
+        return get_reflected(cur_vector, normal_vector);
+    }    
+
+    Vector3d reflected_perpendicular_to_normal_component = (cur_vector + normal_vector * cos_in) * refraction_index;
+    Vector3d reflected_parallel_to_normal_component      = normal_vector * -sqrtf(fabs(1.0 - reflected_perpendicular_to_normal_component *
+                                                                                             reflected_perpendicular_to_normal_component));
+    *if_refraction = true;
+
+    return reflected_perpendicular_to_normal_component + reflected_parallel_to_normal_component;
+}
+
+Vector3d get_random_vector()
+{
+    return Vector3d{get_random_fractional_float(), get_random_fractional_float(), get_random_fractional_float()};
+}
+
+Vector3d get_random_vector(float min, float max)
+{
+    return Vector3d{get_random_fractional_float(min, max), get_random_fractional_float(min, max), get_random_fractional_float(min, max)};
+}
+
+Vector3d get_random_unit_vector()
+{
+    Vector3d generated_vector{};
+    do
+    {
+        generated_vector = get_random_vector(-1, 1);
+    }
+    while ((generated_vector * generated_vector >= 1) || 
+           (generated_vector * generated_vector < FLOAT_COMPARISON_PRECISION));
+    
+    normalize_vector(&generated_vector);
+
+    return generated_vector;
+}
+
+Vector3d get_random_unit_vector_normal_halfsphere(const Vector3d &normal)
+{
+    Vector3d generated_vector = get_random_unit_vector();
+
+    return generated_vector * normal > 0 ? generated_vector : -generated_vector;
+}
+
+bool is_close_to_zero(const Vector3d &vector)
+{
+    return (fabs(vector.get_x()) < FLOAT_COMPARISON_PRECISION) &&
+           (fabs(vector.get_y()) < FLOAT_COMPARISON_PRECISION) &&
+           (fabs(vector.get_z()) < FLOAT_COMPARISON_PRECISION);
 }

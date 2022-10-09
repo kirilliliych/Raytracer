@@ -1,6 +1,7 @@
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
 
+
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -11,23 +12,22 @@
 #include <SFML/Graphics.hpp>
 #include "color.hpp"
 #include "sphere.hpp"
-#include "lightsource.hpp"
+#include "camera.hpp"
+#include "displaywindow.hpp"
 
 
-const Color ambient_light{0.2, 0.2, 0.2};
-
-const size_t DEPTH_BORDER = 3;
-
-
-class Sphere;
+class  Sphere;
 struct SphereArr;
+class  Camera;
+class  DisplayWindow;
+
 
 class Image
 {
 private:
 
-    unsigned width_  = 0;
-    unsigned height_ = 0;
+    int width_  = 0;
+    int height_ = 0;
 
     sf::Image image_{};
 
@@ -35,29 +35,28 @@ public:
 
     Image(){};
 
-    void create(unsigned width, unsigned height, Color *color);
+    void create(int width, int height, const Color &color);
 
-    void set_pixel(unsigned x_coord, unsigned y_coord, Color *color);
+    void set_pixel(int x_coord, int y_coord, const Color &color);
 
-    void render(const SphereArr *spheres, const LightSourceArr *lights, const Point3d *camera);
+    void render(DisplayWindow *window, const Camera &camera, const SphereArr &spheres);
 
-    unsigned get_width()
+    unsigned get_width() const
     {
         return width_;
     }
-    unsigned get_height()
+    unsigned get_height() const
     {
         return height_;
     }
 
-    const sf::Image &get_image_ref()    //
-    {                                   // required for drawing image
-        return image_;                  //
-    }                                   //
+    const sf::Image &get_image_ref() const   //
+    {                                        // required for drawing image
+        return image_;                       //
+    }                                        //
 };
 
-Color cast_rays(const Vector3d &origin, const Vector3d &direction, const SphereArr *spheres,
-                                                                   const LightSourceArr *lights,
-                                                                   int depth);
+const size_t MAX_RAY_COLOR_RECURSION_DEPTH      = 5;
+const size_t ANTI_ALIASING_PROCESSING_PER_PIXEL = 100;
 
 #endif

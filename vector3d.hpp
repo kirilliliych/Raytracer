@@ -8,17 +8,11 @@
 #include <iostream>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
-#include "drawable.hpp"
 #include "point3d.hpp"
-#include "pixel3d.hpp"
-#include "color.hpp"
+#include "utilities.hpp"
 
 
-class CoordSys;
-class DisplayWindow;
-
-
-class Vector3d : public Drawable    // not drawable but shape
+class Vector3d
 {
 private:
 
@@ -28,20 +22,13 @@ private:
 
 public:
     
-    Vector3d()
-    {
-        type_ = DrawableType::VECTOR;
-    }
+    Vector3d(){};
 
     Vector3d(float x_coord, float y_coord, float z_coord = 0);
 
     Vector3d(const Point3d *beginning, const Point3d *ending);
 
-    Vector3d(const Pixel3d *beginning, const Pixel3d *ending);
-
     Vector3d(const Point3d *radius_vector_ending);
-
-    Vector3d(const Pixel3d *radius_vector_ending);
 
     float get_x() const
     {
@@ -91,6 +78,15 @@ public:
         z_coord_ *= scalar;
     }
 
+    void operator /=(float scalar)
+    {
+        assert(abs(scalar) > FLOAT_COMPARISON_PRECISION);
+
+        x_coord_ /= scalar;
+        y_coord_ /= scalar;
+        z_coord_ /= scalar;
+    }
+
     Vector3d operator +(const Vector3d &another_vector) const
     {
         Vector3d result = *this;
@@ -115,12 +111,20 @@ public:
         return result;
     }
 
+    Vector3d operator /(float scalar) const
+    {
+        Vector3d result = *this;
+        result /= scalar;
+
+        return result;
+    }
+
     Vector3d operator -() const
     {
         return {-x_coord_, -y_coord_, -z_coord_};
     }
 
-    float operator *(const Vector3d &another_vector)
+    float operator *(const Vector3d &another_vector) const
     {
         return (get_x() * another_vector.get_x() +
                 get_y() * another_vector.get_y() +
@@ -128,20 +132,27 @@ public:
     }
 };
 
-Vector3d get_reflected_vector(Vector3d *to_reflect, Vector3d *normal_vector);
-
-void multiply_vector(Vector3d *vector, float multiplier);
-
-float get_vector_length_square(const Vector3d *vector);
-
 void normalize_vector(Vector3d *vector);
 
 void set_vector_length(Vector3d *vector, float length);
 
-float scalar_multiplication(const Vector3d *opd1, const Vector3d *opd2);
+float cos_between_vectors(const Vector3d &opd1, const Vector3d &opd2);
 
-float cos_between_vectors(const Vector3d *opd1, const Vector3d *opd2);
+Vector3d get_perpendicular(const Vector3d &v1, const Vector3d &v2);
 
 Vector3d get_reflected(const Vector3d &cur_vector, const Vector3d &normal_vector);
+
+Vector3d get_refracted(const Vector3d &cur_vector, const Vector3d &normal_vector,
+                       float refraction_index,     bool *if_refraction);
+
+Vector3d get_random_vector();
+
+Vector3d get_random_vector(float min, float max);
+
+Vector3d get_random_unit_vector();
+
+Vector3d get_random_unit_vector_normal_halfsphere(const Vector3d &normal);
+
+bool is_close_to_zero(const Vector3d &vector);
 
 #endif

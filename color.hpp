@@ -7,66 +7,67 @@
 #include <cstring>
 #include <cstdint>
 #include <iostream>
-#include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
-#include "colorlibrary.hpp"
+#include "utilities.hpp"
+#include "vector3d.hpp"
 
 
-const uint8_t COLOR_MAX_VALUE = 0xFF;
+const uint8_t COLOR_MAX_VALUE     = 0xFF;
+const float GAMMA_CORRECTION_COEF = 0.5;
 
 
 class Color
 {
 private:
     
-    float red_d_   = 0;
-    float green_d_ = 0;
-    float blue_d_  = 0; 
-    float alpha_d_ = 1;
+    float red_f_   = 0;
+    float green_f_ = 0;
+    float blue_f_  = 0; 
+    float alpha_f_ = 1;
 
     sf::Color color_{};
 
 
     void limit_floats()
     {
-        if (red_d_ > 1)
+        if (red_f_ > 1)
         {
-            red_d_ = 1;
+            red_f_ = 1;
         }
 
-        if (green_d_ > 1)
+        if (green_f_ > 1)
         {
-            green_d_ = 1;
+            green_f_ = 1;
         }
 
-        if (blue_d_ > 1)
+        if (blue_f_ > 1)
         {
-            blue_d_ = 1;
+            blue_f_ = 1;
         }
 
-        if (alpha_d_ > 1)
+        if (alpha_f_ > 1)
         {
-            alpha_d_ = 1;
+            alpha_f_ = 1;
         }
 
-        if (red_d_ < 0)
+        if (red_f_ < 0)
         {
-            red_d_ = 0;
+            red_f_ = 0;
         }
 
-        if (green_d_ < 0)
+        if (green_f_ < 0)
         {
-            green_d_ = 0;
+            green_f_ = 0;
         }
 
-        if (blue_d_ < 0)
+        if (blue_f_ < 0)
         {
-            blue_d_ = 0;
+            blue_f_ = 0;
         }
 
-        if (alpha_d_ < 0)
+        if (alpha_f_ < 0)
         {
-            alpha_d_ = 0;
+            alpha_f_ = 0;
         }
 
         update_ints();
@@ -74,60 +75,60 @@ private:
 
     void update_ints()
     {
-        color_.r = (double) (red_d_   * COLOR_MAX_VALUE);
-        color_.g = (double) (green_d_ * COLOR_MAX_VALUE);
-        color_.b = (double) (blue_d_  * COLOR_MAX_VALUE);
+        color_.r = (float) (red_f_   * COLOR_MAX_VALUE);
+        color_.g = (float) (green_f_ * COLOR_MAX_VALUE);
+        color_.b = (float) (blue_f_  * COLOR_MAX_VALUE);
     }
 
     void update_floats()
     {
-        red_d_   = (double) color_.r / COLOR_MAX_VALUE;
-        green_d_ = (double) color_.g / COLOR_MAX_VALUE;
-        blue_d_  = (double) color_.b / COLOR_MAX_VALUE;
+        red_f_   = (float) color_.r / COLOR_MAX_VALUE;
+        green_f_ = (float) color_.g / COLOR_MAX_VALUE;
+        blue_f_  = (float) color_.b / COLOR_MAX_VALUE;
     }
 
 public:
 
     Color();
 
-    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = (uint8_t) 0xFF);
+    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
 
-    Color(double r, double g, double b, double a = 1);
+    Color(float r, float g, float b, float a = 1);
 
     Color(unsigned rgba);
 
-    uint8_t get_r()
+    uint8_t get_r() const
     {
         return color_.r;
     }
-    uint8_t get_g()
+    uint8_t get_g() const
     {
         return color_.g;
     }
-    uint8_t get_b()
+    uint8_t get_b() const
     {
         return color_.b;
     }
-    uint8_t get_a()
+    uint8_t get_a() const
     {
         return color_.a;
     }
 
-    double get_red_d()
+    float get_red_f() const
     {
-        return red_d_;
+        return red_f_;
     }
-    double get_green_d()
+    float get_green_f() const
     {
-        return green_d_;
+        return green_f_;
     }
-    double get_blue_d()
+    float get_blue_f() const
     {
-        return blue_d_;
+        return blue_f_;
     }
-    double get_alpha_d()
+    float get_alpha_f() const
     {
-        return alpha_d_;
+        return alpha_f_;
     }
     
     const sf::Color &get_color_ref() const
@@ -139,72 +140,66 @@ public:
     {
         color_.r = r;
 
-        red_d_   = (double) r / COLOR_MAX_VALUE;
+        red_f_   = (float) r / COLOR_MAX_VALUE;
     }
     void set_g(uint8_t g)
     {
         color_.g = g;
 
-        green_d_ = (double) g / COLOR_MAX_VALUE;
+        green_f_ = (float) g / COLOR_MAX_VALUE;
     }
     void set_b(uint8_t b)
     {
         color_.b = b;
 
-        blue_d_  = (double) b / COLOR_MAX_VALUE;
+        blue_f_  = (float) b / COLOR_MAX_VALUE;
     }
     void set_a(uint8_t a)
     {
         color_.a = a;
 
-        alpha_d_ = (double) a / COLOR_MAX_VALUE;
+        alpha_f_ = (float) a / COLOR_MAX_VALUE;
     }
     
-    void set_red_d(double red_d)
+    void set_red_d(float red_d)
     {
-        red_d_ = red_d;
+        red_f_ = red_d;
 
         limit_floats();
         update_ints();
     }
-    void set_green_d(double green_d)
+    void set_green_d(float green_d)
     {
-        green_d_ = green_d;
+        green_f_ = green_d;
 
         limit_floats();
         update_ints();
     }
-    void set_blue_d(double blue_d)
+    void set_blue_d(float blue_d)
     {
-        blue_d_ = blue_d;
+        blue_f_ = blue_d;
 
         limit_floats();
         update_ints();
     }
-    void set_alpha_d(double alpha_d)
+    void set_alpha_d(float alpha_d)
     {
-        alpha_d_ = alpha_d;
+        alpha_f_ = alpha_d;
 
         limit_floats();
         update_ints();
     }
     
-    void set_color(uint32_t rgba)
-    {
-        color_.r = (uint8_t) ((rgba & 0xFF000000) >> 24);
-        color_.g = (uint8_t) ((rgba & 0x00FF0000) >> 16);
-        color_.b = (uint8_t) ((rgba & 0x0000FF00) >> 8);
-        color_.a = (uint8_t)  (rgba & 0x000000FF);
+    void set_color(uint32_t rgba);
 
-        update_floats();
-    }
+    Color gamma_correction(float exponent);
 
 
     void operator +=(const Color &another_color)
     {
-        red_d_   += another_color.red_d_;
-        green_d_ += another_color.green_d_;
-        blue_d_  += another_color.blue_d_;
+        red_f_   += another_color.red_f_;
+        green_f_ += another_color.green_f_;
+        blue_f_  += another_color.blue_f_;
         
         limit_floats();
         update_ints();
@@ -212,20 +207,30 @@ public:
 
     void operator *=(const Color &another_color)
     {
-        red_d_   *= another_color.red_d_;
-        green_d_ *= another_color.green_d_;
-        blue_d_  *= another_color.blue_d_;
+        red_f_   *= another_color.red_f_;
+        green_f_ *= another_color.green_f_;
+        blue_f_  *= another_color.blue_f_;
 
         limit_floats();
         update_ints();
     }
 
-    void operator *=(double scalar)
+    void operator *=(float scalar)
     {
-        red_d_   *= scalar;
-        green_d_ *= scalar;
-        blue_d_  *= scalar;
+        red_f_   *= scalar;
+        green_f_ *= scalar;
+        blue_f_  *= scalar;
         
+        limit_floats();
+        update_ints();
+    }
+
+    void operator /=(float scalar)
+    {
+        red_f_   /= scalar;
+        green_f_ /= scalar;
+        blue_f_  /= scalar;
+
         limit_floats();
         update_ints();
     }
@@ -254,7 +259,7 @@ public:
         return result;
     }
 
-    Color operator *(double scalar) const
+    Color operator *(float scalar) const
     {
         Color result = *this;
 
@@ -266,6 +271,24 @@ public:
         return result;
     }
 
+    Color operator /(float scalar) const
+    {
+        Color result = *this;
+
+        result /= scalar;
+
+        result.limit_floats();
+        result.update_ints();
+
+        return result;
+    }
+
 };
+
+Vector3d color_to_vector(const Color &color);
+
+Vector3d color255_to_vector(const Color &color);
+
+Color vector_to_color(const Vector3d &vector);
 
 #endif

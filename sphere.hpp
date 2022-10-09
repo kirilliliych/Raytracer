@@ -9,10 +9,8 @@
 #include <iostream>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include "point3d.hpp"
 #include "vector3d.hpp"
-#include "pixel3d.hpp"
-#include "lightsource.hpp"
-#include "image.hpp"
 #include "material.hpp"
 
 
@@ -28,16 +26,21 @@ private:
 
     Vector3d origin_{};
     Material material_{};
+    Color    color_{};
     
     float radius_ = 0;
+
+    bool is_light_source_ = false;
 
 public:
 
     Sphere(){};
 
-    Sphere(const Point3d &origin, float radius, const Material &material)
-      : radius_(radius),
-        material_ (material)
+    Sphere(const Point3d &origin, float radius, const Material &material, const Color &color, bool is_light_source)
+      : radius_          (radius),
+        material_        (material),
+        color_           (color),
+        is_light_source_ (is_light_source)
     {
         assert(std::isfinite(radius));
         assert(radius > 0);
@@ -47,18 +50,22 @@ public:
         origin_.set_z(origin.get_z());
     }
     
-    Sphere(const Vector3d &origin, float radius, const Material &material)
-      : origin_(origin),
-        radius_(radius),
-        material_(material)
+    Sphere(const Vector3d &origin, float radius, const Material &material, const Color &color, bool is_light_source)
+      : origin_          (origin),
+        radius_          (radius),
+        material_        (material),
+        color_           (color),
+        is_light_source_ (is_light_source)
     {
         assert(std::isfinite(radius));
         assert(radius > 0);
     }
     
-    Sphere(float x_origin, float y_origin, float z_origin, float radius, const Material &material)
-      :  radius_(radius),
-         material_ (material)
+    Sphere(float x_origin, float y_origin, float z_origin, float radius, const Material &material, const Color &color, bool is_light_source)
+      :  radius_          (radius),
+         material_        (material),
+         color_           (color),
+         is_light_source_ (is_light_source)
     {
         assert(std::isfinite(radius));
         assert(radius > 0);
@@ -84,11 +91,10 @@ public:
     {
         return origin_;
     }
-    const Vector3d &get_origin_ptr() const
+    const Vector3d &get_origin_ref() const
     {
         return origin_;
     }
-    
 
     float get_radius() const
     {
@@ -97,6 +103,15 @@ public:
     Material get_material() const
     {
         return material_;
+    }
+    Color get_color() const
+    {
+        return color_;
+    }
+
+    bool is_light_source()
+    {
+        return is_light_source_;
     }
 
     void set_x_origin(float x_origin)
@@ -124,7 +139,10 @@ public:
         material_ = material;
     }
 
-    // void draw(Image *image, LightSource *light_source, Color *ambient_light, Point3d *camera);
+    void set_color(Color color)
+    {
+        color_ = color;
+    }
 };
 
 
@@ -156,12 +174,5 @@ struct SphereArr
     }
 };
 
-
-bool is_in_sphere_2d(Pixel3d *pixel, Sphere *sphere);
-
-float get_sphere_point_z_coord(Sphere *sphere, float x_pos, float y_pos);
-
-bool ray_intersects_sphere(const Sphere *sphere,         float *distance,
-                           const Vector3d &origin, const Vector3d &direction);
 
 #endif
